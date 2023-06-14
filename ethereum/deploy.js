@@ -18,8 +18,9 @@ const deploy = async () => {
         JSON.parse(compiledFactory.interface))
         .deploy({ data: compiledFactory.bytecode })
         .send({ gas: '1000000', from: accounts[0] })
-
-    console.log("contract deployed to", result.options.address)  //address : 0xC0944713CcF21ad3fB1cA6Ddb124Ce74817AA27f
+    
+    console.log(compiledFactory.interface);
+    console.log("contract deployed to", result.options.address)  //address : 0x85bBFFaB2C4ef8BD0BdE1029F483CF871f54FeE9
 
     //interface : 
     // [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"deployedCampaigns","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getDeployedCampaigns","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"minimum","type":"uint256"}],"name":"createCampaign","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
