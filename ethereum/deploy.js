@@ -3,8 +3,8 @@ const Web3 = require('web3')
 const compiledFactory = require("./build/CampaignFactory.json");
 
 const provider = new HDWalletProvider(
-    "adjust mass upon possible empower program category reject tag lake divert wife",
-    "https://goerli.infura.io/v3/e2b861bb8cb944ba83297b18fa1e9153"
+    "boss tumble network vacant siren battle ladder urge sure style claw police",
+    "https://goerli.infura.io/v3/84b2dcc58d894550827534824d3e4d93"
 );
 
 const web3 = new Web3(provider);
@@ -19,7 +19,10 @@ const deploy = async () => {
         .deploy({ data: compiledFactory.bytecode })
         .send({ gas: '1000000', from: accounts[0] })
 
-    console.log("contract deployed to", result.options.address)
+    console.log("contract deployed to", result.options.address)  //address : 0xC0944713CcF21ad3fB1cA6Ddb124Ce74817AA27f
+
+    //interface : 
+    // [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"deployedCampaigns","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getDeployedCampaigns","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"minimum","type":"uint256"}],"name":"createCampaign","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
     provider.engine.stop();
 };
 deploy();

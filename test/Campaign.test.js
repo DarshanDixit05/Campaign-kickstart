@@ -15,7 +15,7 @@ let campaign;
 
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
-
+    console.log(compiledFactory.interface);
     factory = await new web3.eth.Contract(JSON.parse(compiledFactory.interface))
         .deploy({ data: compiledFactory.bytecode })
         .send({ from: accounts[0], gas: '1000000' });
