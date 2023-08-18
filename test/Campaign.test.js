@@ -9,13 +9,13 @@ const compiledCampaign = require('../ethereum/build/Campaign.json');
 const { interfaces } = require("mocha");
 
 let accounts;
-let factory; 
+let factory; //for deployed instance
 let campaignAddress;
 let campaign;
 
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
-    console.log(compiledFactory.interface);
+
     factory = await new web3.eth.Contract(JSON.parse(compiledFactory.interface))
         .deploy({ data: compiledFactory.bytecode })
         .send({ from: accounts[0], gas: '1000000' });
@@ -25,10 +25,12 @@ beforeEach(async () => {
         gas: '1000000'
     });
 
-    [campaignAddress] = await factory.methods.getDeployedCampaigns().call(); // gets first index of the deployed campaign array and stores in the campaignAddress
+    [campaignAddress] = await factory.methods.getDeployedCampaigns().call();
 
-    // storing the already deployed contract throught its inerface interface and address where the contract is deployed in the network
-    campaign = await new web3.eth.Contract(JSON.parse(compiledCampaign.interface), campaignAddress);
+    //by address (already deployed)
+    campaign = await new web3.eth.Contract(
+        JSON.parse(compiledCampaign.interface), campaignAddress
+    );
 });
 
 describe('Campaigns', () => {
@@ -42,67 +44,66 @@ describe('Campaigns', () => {
         assert.equal(accounts[0], manager);
     });
 
-    it('different user contribution', async ()=>{
-        const newContributor = await campaign.methods.contribute().send({
+    it('allows people to contribute money and mark them as approvers', async () => {
+        await campaign.methods.contribute().send({
             value: '200',
-            from : accounts[1]
-        })
+            from: accounts[1]
+        });
 
-        const flag = await campaign.methods.approvers(accounts[1]);
-        assert(flag);
-    })
+        const isContributer = await campaign.methods.approvers(accounts[1]).call();
+        assert(isContributer);
+    });
 
-    it('check minimum amout to contribute', async()=>{
+    it('requires a minimum contribution', async () => {
         try {
             await campaign.methods.contribute().send({
-                value:'1',
-                from:accounts[0]
-            })
-
+                value: '5',
+                from: accounts[1]
+            });
             assert(false);
         } catch (error) {
-            assert(error);
+            assert(error)
         }
-    })
+    });
 
-    it('create a request check', async()=>{
-        await campaign.methods.createRequest('Need funds for switches', '300', accounts[1]).send({
-            from:accounts[0],
-            gas:'1000000'
-        });
-        const newReq = await campaign.methods.requests(0).call();
-        assert('Need funds for switches', newReq.description);
-    })
-
-    it('end to end test', async()=>{
-        //contribute to the campaign    
-        await campaign.methods.contribute().send({
-            from: accounts[0],
-            value : web3.utils.toWei('10', 'ether')
-        })        
-        
-
-        //creating a request where the manager requests for 5 ether which will be transfered to reciptant : accounts[1]
-        await campaign.methods.createRequest('1', web3.utils.toWei('5', 'ether'), accounts[1]).send({
-            from:accounts[0],
-            gas:'1000000'
-        });
+    it('allows a manager to make payment request', async () => {
+        await campaign.methods
+            .createRequest("Buy Batteries", '100', accounts[1])
+            .send({
+                from: accounts[0],
+                gas: '1000000'
+            });
 
         const request = await campaign.methods.requests(0).call();
 
-        //approve request 
-        await campaign.methods.approveRequest(0).send({
-            from:accounts[0],
-            gas : '1000000'
-        })
+        assert.equal("Buy Batteries", request.description);
+    });
 
-        //finalize the request
+    it('processes requests', async () => {
+        await campaign.methods.contribute().send({
+            from: accounts[0],
+            value: web3.utils.toWei('10', 'ether')
+        });
+
+        await campaign.methods
+            .createRequest('A', web3.utils.toWei('5', 'ether'), accounts[1])
+            .send({ from: accounts[0], gas: '1000000' });
+
+        await campaign.methods
+            .approveRequest(0).send({
+                from: accounts[0],
+                gas: '1000000'
+            });
+
         await campaign.methods.finalizeRequest(0).send({
-            from : accounts[0],
-            gas : '1000000'
-        })
-        let balanceInRecieptant = await web3.eth.getBalance(accounts[1]);
-        // convert the balance which is in wei to ether and the whole string value to float datatype
-        assert(parseFloat(web3.utils.fromWei(balanceInRecieptant, 'ether')) > 104);
-    })
+            from: accounts[0],
+            gas: '1000000'
+        });
+
+        let balance = await web3.eth.getBalance(accounts[1]);
+        balance = web3.utils.fromWei(balance, 'ether');
+        balance = parseFloat(balance);
+        console.log(balance);
+        assert(balance > 103);
+    });
 });

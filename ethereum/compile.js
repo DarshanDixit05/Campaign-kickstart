@@ -15,7 +15,7 @@ const output = solc.compile(source, 1).contracts;
 fs.ensureDirSync(buildPath);
 
 for (let contract in output) {
-    const contractName = contract.replace(':', '');
+    const contractName = contract.replace(':', ''); // Remove the colon character
     const fileName = contractName + '.json';
     fs.outputJSONSync(
         path.resolve(buildPath, fileName), output[contract]

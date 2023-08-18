@@ -20,7 +20,7 @@ contract Campaign {
         address recipient;
         bool complete;
         uint approvalCount;
-        mapping(address => bool) approvals;
+        mapping(address => bool) approvals; // people that have approved a contract
     }
 
     Request[] public requests;
@@ -64,7 +64,12 @@ contract Campaign {
 
     function approveRequest(uint index) public payable {
         Request storage request = requests[index];
+        //make sure that person calling this function
+        //has donated
         require(approvers[msg.sender]);
+
+        //make sure that the person calling this function
+        //hasn't voted before
         require(!request.approvals[msg.sender]);
 
         request.approvals[msg.sender] = true;
@@ -79,5 +84,22 @@ contract Campaign {
         request.recipient.transfer(request.value);
         request.complete = true;
     }
-}
 
+    function getSummary()
+        public
+        view
+        returns (uint, uint, uint, uint, address)
+    {
+        return (
+            minimumContribution,
+            this.balance,
+            requests.length,
+            approversCount,
+            manager
+        );
+    }
+
+    function getRequestsCount() public view returns (uint) {
+        return requests.length;
+    }
+}
